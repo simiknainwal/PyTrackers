@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Track Product | E-Price Tracker</title>
+    <style>
+        body{
+            background-color: #f2f2f2;
+
+        }
+        h2{
+            font-family: cursive;
+            text-align: center;
+        }
+        form{
+            max-width: 400px;
+            padding: 15px;
+            margin:10px auto;
+            border-radius: 15px;
+            box-shadow: 0px 0px 10px gray;
+            background-color: #dbeafe;
+        }
+        p{
+            text-align: center;
+        }
+        #home{
+            text-align: center;
+            max-width: 400px;
+            padding: 15px;
+            margin:10px auto;
+            border-radius: 15px;
+            box-shadow: 0px 0px 10px gray;
+            background-color: #dbeafe;
+        }
+        div{
+            border-radius: 15px;
+            box-shadow: 0px 0px 10px gray;
+            padding: 15px;
+            text-align: center;
+            background-color: #a7eef9;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Enter Product Details</h2>
+
+    
+    <form action="/track" method="POST">
+        <label for="url">Product URL:</label><br>
+        <input type="text" id="url" name="url" required><br><br>
+        
+        <label for="target">Target Price:</label><br>
+        <input type="number" id="target" name="target" required><br><br>
+        
+        <label for="currency">Currency:</label><br>
+        <select id="currency" name="currency">
+            <option value="INR">INR</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+        </select><br><br>
+        
+        <input type="submit" value="Start Tracking">
+    </form>
+    <br>
+    {% if message %}
+    <div>
+        {{ message | safe }}
+    </div>
+    {% endif %}
+
+    <p id="home"><a href="/">Back to Home</a></p>
+<footer>
+    <p>Created by Team PyTrackers</p>
+</footer>
+</body>
+</html>
