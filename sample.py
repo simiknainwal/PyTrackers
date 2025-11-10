@@ -1,78 +1,113 @@
 from flask import Flask, render_template, request
-from web_scraping import WebScraper
+from web_scraping import WebScraper, log_to_csv_row
 from price_alert import PriceAlertSystem
-import csv
+from price_plot import generate_dummy_past_prices, plot_price_trend, get_recommendation
+from datetime import datetime
 import os
+import pandas as pd
+
 app = Flask(__name__)
+
 scraper = WebScraper()
 alert_system = PriceAlertSystem()
 CSV_FILE = 'price_history.csv'
-#This function is used to save data in CSV file.
-def save_to_csv(data):
-    file_exists = os.path.isfile(CSV_FILE)
-    with open(CSV_FILE, 'a', newline='', encoding='utf-8') as file:
-        writer = csv.DictWriter(file, fieldnames=['Product Name', 'Current Price', 'Target Price', 'Currency', 'URL'])
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow({
-            'Product Name': data['product_name'],
-            'Current Price': data['price'],
-            'Target Price': data['target_price'],
-            'Currency': data['currency'],
-            'URL': data['url']
-        })
 
 
-# --- Home Page ---
 @app.route('/')
 def home():
+    """Render homepage."""
     return render_template('index.html')
 
 
-# --- Track Product Page ---
 @app.route('/track', methods=['GET', 'POST'])
 def track():
+    """Handle product tracking and visualization."""
+    image_path = None
+    web_message = ""
+
     if request.method == 'POST':
         url = request.form['url'].strip()
         target = float(request.form['target'])
-        currency = request.form['currency'].strip()
 
-        # Scrape product details
+        # Scrape product once (no background thread)
         product_data = scraper.scrape_product(url)
 
-        if product_data:
-            # Add target and currency fields
-            product_data['target_price'] = target
-            product_data['currency'] = currency
+        if product_data and product_data['price'] > 0:
+            now = datetime.now()
 
-            # Save data in CSV
-            save_to_csv(product_data)
+            # Log current price to CSV
+            row = {
+                'product_id': product_data['product_id'],
+                'product_name': product_data['product_name'],
+                'date': now.strftime("%Y-%m-%d"),
+                'time': now.strftime("%H:%M:%S"),
+                'price': product_data['price'],
+                'source': product_data['source'],
+                'url': product_data['url']
+            }
+            log_to_csv_row(CSV_FILE, row)
 
-            # Check price alert
-            alert_message = alert_system.check_and_alert(product_data, target)
+            # Generate dummy data for last year's prices
+            past_df = generate_dummy_past_prices(product_data['price'])
 
-            # Generate message for web interface
+            # Get recommendation and plot price trend
+            recommendation = get_recommendation(product_data['price'], past_df, target)
+            image_path = plot_price_trend(
+                product_data['product_name'],
+                product_data['price'],
+                target,
+                past_df
+            )
+
+            # Prepare message for UI
+            web_message = (
+                f"✅ <b>{product_data['product_name']}</b><br>"
+                f"💰 Current Price: ₹{product_data['price']}<br>"
+                f"🎯 Target Price: ₹{target}<br>"
+                f"💡 Recommendation: {recommendation}<br>"
+            )
+
+            # Immediate check for alert condition
             if product_data['price'] <= target:
-                web_message = (f"<b>PRICE DROP ALERT!</b><br>"
-                               f"Product: {product_data['product_name']}<br>"
-                               f"Current Price: {product_data['price']} {currency}<br>"
-                               f"Target Price: {target} {currency}<br>"
-                               f"You save: {target - product_data['price']:.2f} {currency}<br>"
-                               f"Recommended: BUY NOW!")
+                web_message += "🎯 Target reached! You can buy now."
             else:
-                web_message = (f"Tracking started for '{product_data['product_name']}'<br>"
-                               f"Current Price: {product_data['price']} {currency}<br>"
-                               f"Target Price: {target} {currency}<br>"
-                               f"Price is {product_data['price'] - target:.2f} {currency} above your target. Keep monitoring.")
+                web_message += "⏳ Price is above target. Try again later."
 
         else:
-            web_message = "Failed to fetch product details. Please check the URL or try again."
+            web_message = "❌ Failed to fetch product. Check URL."
 
-        return render_template('track2.html', message=web_message)
+        return render_template('track2.html', message=web_message, image_path=image_path)
+    
+    # FIX: Handle GET request - show the tracking form
+    return render_template('index.html')
 
-    return render_template('track2.html')
+
+@app.route('/history')
+def history():
+    """Display all tracked products from CSV."""
+    if not os.path.exists(CSV_FILE):
+        return render_template('history.html', products=[], message="No tracking history yet!")
+    
+    try:
+        df = pd.read_csv(CSV_FILE)
+        
+        # Get latest entry for each unique product
+        df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'])
+        df = df.sort_values('datetime', ascending=False)
+        
+        # Group by product_id and get the most recent entry
+        latest_products = df.groupby('product_id').first().reset_index()
+        
+        # Convert to list of dictionaries
+        products = latest_products.to_dict('records')
+        
+        return render_template('history.html', products=products, message=None)
+    
+    except Exception as e:
+        print(f"⚠️ Error reading history: {e}")
+        return render_template('history.html', products=[], message="Error loading tracking history")
 
 
-# --- Run Flask App ---
 if __name__ == '__main__':
+    os.makedirs('data', exist_ok=True)
     app.run(debug=True)

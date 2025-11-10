@@ -1,32 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<style>
-    h1,h2{
-        text-align: center;
-    }
-    p{
+    <meta name="description" content="Track Amazon product prices and get alerts when prices drop">
+    <title>Track Product | E-Price Tracker</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #dbeafe, #93c5fd);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            flex: 1;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h2 {
             text-align: center;
-            max-width: 300px;
-            padding: 15px;
-            margin:10px auto;
-            border-radius: 15px;
-            box-shadow: 0px 0px 10px gray;
+            color: #1e3a8a;
+            font-size: 2em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #1e40af;
+            font-size: 1em;
+            margin-bottom: 30px;
+        }
+
+        form {
+            background: white;
+            max-width: 500px;
+            margin: 0 auto 30px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1e40af;
+            font-size: 14px;
+        }
+
+        .input-hint {
+            display: block;
+            font-size: 12px;
+            color: #64748b;
+            margin-top: -4px;
+            margin-bottom: 8px;
+        }
+
+        input[type=text],
+        input[type=number],
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #93c5fd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type=text]:focus,
+        input[type=number]:focus,
+        select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield; /* Firefox */
+            appearance: textfield; /* Standard */
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none; /* Chrome/Safari */
+            appearance: none; /* Standard */
+            margin: 0;
+        }
+
+        input[type=submit] {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #2563eb, #1e40af);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        input[type=submit]:hover {
+            background: linear-gradient(90deg, #1e40af, #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        input[type=submit]:active {
+            transform: translateY(0);
+        }
+
+        input[type=submit]:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message-box {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 15px 20px;
             background-color: #dbeafe;
-    }
-</style>
+            border-left: 5px solid #2563eb;
+            border-radius: 10px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-links {
+            text-align: center;
+            margin: 30px auto;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            display: inline-block;
+            text-decoration: none;
+            color: white;
+            background: linear-gradient(90deg, #2563eb, #1e40af);
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .nav-links a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .nav-links a.secondary {
+            background: linear-gradient(90deg, #64748b, #475569);
+        }
+
+        footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 20px;
+            background: #1e3a8a;
+            color: white;
+            font-size: 0.9em;
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        .feature-list {
+            max-width: 500px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-list h3 {
+            color: #1e3a8a;
+            margin-top: 0;
+            font-size: 1.1em;
+        }
+
+        .feature-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .feature-list li:before {
+            content: "✓ ";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .loading:after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+            h2 {
+                font-size: 1.5em;
+                margin-top: 10px;
+            }
+
+            form {
+                padding: 20px;
+                margin: 0 10px 20px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 10px;
+                padding: 0 20px;
+            }
+
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+            }
+
+            .feature-list {
+                margin: 20px 10px;
+            }
+        }
+    </style>
+</head>
+
 <body>
-    <main>
-    <h1>Economic Price Tracker</h1>
-    <h2>Track and analyze product prices for free.</h2>
-    <p><a href="/track">Start Tracking</a></p>
+    <div class="container">
+        <h2>🛒 E-Price Tracker</h2>
+        <p class="subtitle">Track Amazon prices and never miss a deal!</p>
+
+        <form action="/track" method="POST" id="trackForm" onsubmit="return handleSubmit()">
+            <label for="url">Product URL: *</label>
+            <span class="input-hint">Paste the Amazon product link here</span>
+            <input 
+                type="text" 
+                id="url" 
+                name="url" 
+                placeholder="https://www.amazon.in/dp/..." 
+                required
+                pattern=".*amazon.*"
+                title="Please enter a valid Amazon URL"
+            >
+
+            <label for="target">Target Price (₹): *</label>
+            <span class="input-hint">Get notified when price drops to this amount</span>
+            <input 
+                type="number" 
+                id="target" 
+                name="target" 
+                placeholder="e.g., 999" 
+                required
+                min="1"
+                step="0.01"
+            >
+
+            <label for="currency">Currency:</label>
+            <select id="currency" name="currency">
+                <option value="INR" selected>INR (₹)</option>
+                <option value="USD" disabled>USD ($) - Coming Soon</option>
+                <option value="EUR" disabled>EUR (€) - Coming Soon</option>
+            </select>
+
+            <input type="submit" value="🔍 Start Tracking" id="submitBtn">
+        </form>
+
+        <div class="loading" id="loading">Fetching product details</div>
+
+        {% if message %}
+        <div class="message-box">{{ message | safe }}</div>
+        {% endif %}
+
+        <div class="feature-list">
+            <h3>✨ Features</h3>
+            <ul>
+                <li>Real-time price tracking from Amazon</li>
+                <li>Historical price trend visualization</li>
+                <li>Smart buy/wait recommendations</li>
+                <li>Price alert notifications</li>
+            </ul>
+        </div>
+
+        <div class="nav-links">
+            <a href="/">🏠 Home</a>
+            <a href="/history" class="secondary">📊 View All Tracked Products</a>
+        </div>
+    </div>
+
     <footer>
-    <p>Created by Team PyTrackers</p>
-</footer>
-</main>
+        <p><strong>Created by Team PyTrackers</strong></p>
+        <p>Track smarter, save more! 💰</p>
+    </footer>
+
+    <script>
+        function handleSubmit() {
+            const form = document.getElementById('trackForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const urlInput = document.getElementById('url');
+            
+            // Validate Amazon URL
+            if (!urlInput.value.toLowerCase().includes('amazon')) {
+                alert('⚠️ Please enter a valid Amazon product URL');
+                return false;
+            }
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.value = '⏳ Processing...';
+            loading.style.display = 'block';
+            
+            return true;
+        }
+
+        // Auto-focus URL input on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('url').focus();
+        });
+
+        // Clear error messages after 10 seconds
+        const messageBox = document.querySelector('.message-box');
+        if (messageBox) {
+            setTimeout(function() {
+                messageBox.style.transition = 'opacity 0.5s';
+                messageBox.style.opacity = '0';
+                setTimeout(() => messageBox.remove(), 500);
+            }, 10000);
+        }
+    </script>
 </body>
+
 </html>

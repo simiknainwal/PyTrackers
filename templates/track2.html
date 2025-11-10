@@ -1,77 +1,397 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Track Product | E-Price Tracker</title>
-    <style>
-        body{
-            background-color: #f2f2f2;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Price Analysis | E-Price Tracker</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-        }
-        h2{
-            font-family: cursive;
-            text-align: center;
-        }
-        form{
-            max-width: 400px;
-            padding: 15px;
-            margin:10px auto;
-            border-radius: 15px;
-            box-shadow: 0px 0px 10px gray;
-            background-color: #dbeafe;
-        }
-        p{
-            text-align: center;
-        }
-        #home{
-            text-align: center;
-            max-width: 400px;
-            padding: 15px;
-            margin:10px auto;
-            border-radius: 15px;
-            box-shadow: 0px 0px 10px gray;
-            background-color: #dbeafe;
-        }
-        div{
-            border-radius: 15px;
-            box-shadow: 0px 0px 10px gray;
-            padding: 15px;
-            text-align: center;
-            background-color: #a7eef9;
-        }
-    </style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1e3a8a;
+      font-size: 2em;
+      margin: 20px 0 10px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #475569;
+      font-size: 1.1em;
+      font-weight: 400;
+      margin: 0 0 30px;
+    }
+
+    .result-card {
+      background: white;
+      padding: 30px;
+      margin: 20px auto;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      max-width: 700px;
+    }
+
+    .message-box {
+      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+      padding: 20px;
+      border-radius: 15px;
+      border-left: 5px solid #2563eb;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    .message-box strong {
+      color: #1e40af;
+      font-size: 1.1em;
+    }
+
+    .price-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .price-item {
+      background: #f8fafc;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      border: 2px solid #e2e8f0;
+    }
+
+    .price-item .label {
+      font-size: 0.85em;
+      color: #64748b;
+      margin-bottom: 5px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .price-item .value {
+      font-size: 1.5em;
+      color: #1e3a8a;
+      font-weight: bold;
+    }
+
+    .chart-container {
+      margin: 30px 0;
+      text-align: center;
+    }
+
+    .chart-container h3 {
+      color: #1e3a8a;
+      margin-bottom: 15px;
+      font-size: 1.2em;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s;
+    }
+
+    img:hover {
+      transform: scale(1.02);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 30px 0;
+    }
+
+    .btn {
+      text-decoration: none;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #1e40af, #1d4ed8);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #64748b, #475569);
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, #475569, #334155);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(71, 85, 105, 0.4);
+    }
+
+    .error-message {
+      background: #fee2e2;
+      border-left: 5px solid #ef4444;
+      padding: 20px;
+      border-radius: 10px;
+      color: #991b1b;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .success-badge {
+      display: inline-block;
+      background: #10b981;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: 600;
+      margin: 10px 0;
+    }
+
+    .warning-badge {
+      display: inline-block;
+      background: #f59e0b;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: 600;
+      margin: 10px 0;
+    }
+
+    .info-section {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border: 1px solid #e2e8f0;
+    }
+
+    .info-section h4 {
+      color: #1e40af;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    .info-section ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .info-section li {
+      color: #475569;
+      margin: 8px 0;
+      line-height: 1.6;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 20px;
+      text-align: center;
+      color: #475569;
+      font-weight: 600;
+      width: 100%;
+    }
+
+    footer p {
+      margin: 5px 0;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #1e40af;
+    }
+
+    .loading:after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 1.5em;
+        margin: 10px 0;
+      }
+
+      h2 {
+        font-size: 1em;
+      }
+
+      .result-card {
+        padding: 20px;
+      }
+
+      .price-info {
+        grid-template-columns: 1fr;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .message-box {
+        padding: 15px;
+        font-size: 0.95em;
+      }
+    }
+
+    /* Print Styles */
+    @media print {
+      .action-buttons,
+      footer {
+        display: none;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <div class="container">
+    <h1>📊 Price Analysis Results</h1>
+    <h2>Your product has been tracked successfully!</h2>
 
-    <h2>Enter Product Details</h2>
-
-    
-    <form action="/track" method="POST">
-        <label for="url">Product URL:</label><br>
-        <input type="text" id="url" name="url" required><br><br>
-        
-        <label for="target">Target Price:</label><br>
-        <input type="number" id="target" name="target" required><br><br>
-        
-        <label for="currency">Currency:</label><br>
-        <select id="currency" name="currency">
-            <option value="INR">INR</option>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-        </select><br><br>
-        
-        <input type="submit" value="Start Tracking">
-    </form>
-    <br>
     {% if message %}
-    <div>
-        {{ message | safe }}
+    <div class="result-card">
+      <div class="message-box">
+        {{ message|safe }}
+      </div>
+
+      {% if image_path %}
+      <div class="chart-container">
+        <h3>📈 12-Month Price Trend</h3>
+        <img src="/{{ image_path }}" alt="Price Trend Graph" loading="lazy">
+        <p style="color: #64748b; font-size: 0.9em; margin-top: 10px;">
+          Historical price data based on market analysis
+        </p>
+      </div>
+      {% endif %}
+
+      <div class="info-section">
+        <h4>💡 What's Next?</h4>
+        <ul>
+          <li>We've saved this product to your tracking history</li>
+          <li>Check back regularly to see price updates</li>
+          <li>The recommendation is based on historical trends</li>
+          <li>Prices are updated in real-time when you track</li>
+        </ul>
+      </div>
+    </div>
+    {% else %}
+    <div class="result-card">
+      <div class="error-message">
+        <strong>⚠️ No Results Available</strong>
+        <p>We couldn't find any tracking data. Please try tracking a product first.</p>
+      </div>
     </div>
     {% endif %}
 
-    <p id="home"><a href="/">Back to Home</a></p>
-<footer>
-    <p>Created by Team PyTrackers</p>
-</footer>
+    <div class="action-buttons">
+      <a href="/" class="btn btn-primary">
+        🔍 Track Another Product
+      </a>
+      <a href="/history" class="btn btn-secondary">
+        📊 View Tracking History
+      </a>
+    </div>
+
+    <div class="result-card" style="background: linear-gradient(135deg, #eff6ff, #dbeafe);">
+      <h3 style="color: #1e3a8a; margin-top: 0;">📌 Quick Tips</h3>
+      <ul style="color: #475569; line-height: 1.8;">
+        <li><strong>Best Time to Buy:</strong> When price is below historical average</li>
+        <li><strong>Price Drops:</strong> Typically happen during sales events</li>
+        <li><strong>Target Price:</strong> Set it 10-15% below current price for realistic alerts</li>
+        <li><strong>Check Regularly:</strong> Prices can change multiple times per day</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p><strong>Created by Team PyTrackers</strong></p>
+    <p>Smart tracking, smarter shopping! 💰</p>
+  </footer>
+
+  <script>
+    // Add animation when page loads
+    window.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.result-card');
+      cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+          card.style.transition = 'all 0.5s ease-out';
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, index * 100);
+      });
+    });
+
+    // Print functionality
+    function printResults() {
+      window.print();
+    }
+
+    // Share functionality (if supported)
+    function shareResults() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'E-Price Tracker Results',
+          text: 'Check out my price tracking results!',
+          url: window.location.href
+        }).catch(err => console.log('Error sharing:', err));
+      } else {
+        alert('Sharing not supported on this browser');
+      }
+    }
+  </script>
 </body>
+
 </html>
