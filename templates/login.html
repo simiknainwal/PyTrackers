@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | E-Price Tracker</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #dbeafe, #93c5fd);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #1e40af;
+        }
+        form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #93c5fd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        form input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+        input[type=submit] {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #2563eb, #1e40af);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        input[type=submit]:hover {
+            background: linear-gradient(90deg, #1e40af, #1d4ed8);
+        }
+        .message-box {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .nav-links {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #1e3a8a;
+            font-weight: 600;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🔒 Login</h2>
+
+        {% if message %}
+            <div class="message-box">{{ message }}</div>
+        {% endif %}
+
+        <form action="{{ url_for('login') }}" method="POST">
+            <label for="username">Username:</label>
+            <input type="text" name="username" id="username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" required>
+
+            <input type="submit" value="Login">
+        </form>
+
+        <div class="nav-links">
+            <a href="{{ url_for('register') }}">📝 Register</a>
+        </div>
+    </div>
+</body>
+</html>

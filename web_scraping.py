@@ -262,11 +262,11 @@ class WebScraper:
                 pass
         return 0.0
 
-
 def log_to_csv_row(filename, rowdict):
     """Append a product price record to CSV."""
     os.makedirs(os.path.dirname(filename) if os.path.dirname(filename) else ".", exist_ok=True)
-    fieldnames = ['product_id', 'product_name', 'date', 'time', 'price', 'source', 'url']
+
+    fieldnames = ['username', 'product_id', 'product_name', 'date', 'time', 'price', 'source', 'url']
     file_exists = os.path.isfile(filename)
 
     with open(filename, "a", newline="", encoding="utf-8") as f:

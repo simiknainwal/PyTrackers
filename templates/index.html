@@ -7,9 +7,7 @@
     <meta name="description" content="Track Amazon product prices and get alerts when prices drop">
     <title>Track Product | E-Price Tracker</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -88,18 +86,6 @@
             border-color: #2563eb;
         }
 
-        input[type=number] {
-            -moz-appearance: textfield; /* Firefox */
-            appearance: textfield; /* Standard */
-        }
-
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none; /* Chrome/Safari */
-            appearance: none; /* Standard */
-            margin: 0;
-        }
-
         input[type=submit] {
             width: 100%;
             padding: 14px;
@@ -110,23 +96,6 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        input[type=submit]:hover {
-            background: linear-gradient(90deg, #1e40af, #1d4ed8);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-        }
-
-        input[type=submit]:active {
-            transform: translateY(0);
-        }
-
-        input[type=submit]:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            transform: none;
         }
 
         .message-box {
@@ -137,18 +106,6 @@
             border-left: 5px solid #2563eb;
             border-radius: 10px;
             font-weight: 500;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .nav-links {
@@ -168,12 +125,6 @@
             padding: 12px 24px;
             border-radius: 10px;
             font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .nav-links a:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
 
         .nav-links a.secondary {
@@ -189,10 +140,6 @@
             font-size: 0.9em;
         }
 
-        footer p {
-            margin: 5px 0;
-        }
-
         .feature-list {
             max-width: 500px;
             margin: 20px auto;
@@ -201,77 +148,13 @@
             border-radius: 15px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-
-        .feature-list h3 {
-            color: #1e3a8a;
-            margin-top: 0;
-            font-size: 1.1em;
-        }
-
-        .feature-list ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .feature-list li {
-            padding: 8px 0;
-            color: #475569;
-            font-size: 14px;
-        }
-
-        .feature-list li:before {
-            content: "✓ ";
-            color: #10b981;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-
+        
         .loading {
             display: none;
             text-align: center;
             margin: 20px 0;
             color: #1e40af;
             font-weight: 600;
-        }
-
-        .loading:after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 600px) {
-            h2 {
-                font-size: 1.5em;
-                margin-top: 10px;
-            }
-
-            form {
-                padding: 20px;
-                margin: 0 10px 20px;
-            }
-
-            .nav-links {
-                flex-direction: column;
-                gap: 10px;
-                padding: 0 20px;
-            }
-
-            .nav-links a {
-                width: 100%;
-                text-align: center;
-            }
-
-            .feature-list {
-                margin: 20px 10px;
-            }
         }
     </style>
 </head>
@@ -284,39 +167,21 @@
         <form action="/track" method="POST" id="trackForm" onsubmit="return handleSubmit()">
             <label for="url">Product URL: *</label>
             <span class="input-hint">Paste the Amazon product link here</span>
-            <input 
-                type="text" 
-                id="url" 
-                name="url" 
-                placeholder="https://www.amazon.in/dp/..." 
-                required
-                pattern=".*amazon.*"
-                title="Please enter a valid Amazon URL"
-            >
+            <input type="text" id="url" name="url" placeholder="https://www.amazon.in/dp/..." required>
 
             <label for="target">Target Price (₹): *</label>
             <span class="input-hint">Get notified when price drops to this amount</span>
-            <input 
-                type="number" 
-                id="target" 
-                name="target" 
-                placeholder="e.g., 999" 
-                required
-                min="1"
-                step="0.01"
-            >
+            <input type="number" id="target" name="target" placeholder="e.g., 999" required>
 
             <label for="currency">Currency:</label>
             <select id="currency" name="currency">
                 <option value="INR" selected>INR (₹)</option>
-                <option value="USD" disabled>USD ($) - Coming Soon</option>
-                <option value="EUR" disabled>EUR (€) - Coming Soon</option>
             </select>
 
             <input type="submit" value="🔍 Start Tracking" id="submitBtn">
         </form>
 
-        <div class="loading" id="loading">Fetching product details</div>
+        <div class="loading" id="loading">Fetching product details...</div>
 
         {% if message %}
         <div class="message-box">{{ message | safe }}</div>
@@ -332,9 +197,18 @@
             </ul>
         </div>
 
+        <!-- ⭐ UPDATED NAVIGATION WITH LOGIN / REGISTER / LOGOUT -->
         <div class="nav-links">
+
             <a href="/">🏠 Home</a>
             <a href="/history" class="secondary">📊 View All Tracked Products</a>
+
+            {% if 'username' in session %}
+                <a href="{{ url_for('logout') }}" class="secondary">🚪 Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">🔑 Login</a>
+                <a href="{{ url_for('register') }}" class="secondary">📝 Register</a>
+            {% endif %}
         </div>
     </div>
 
@@ -345,40 +219,19 @@
 
     <script>
         function handleSubmit() {
-            const form = document.getElementById('trackForm');
             const submitBtn = document.getElementById('submitBtn');
             const loading = document.getElementById('loading');
-            const urlInput = document.getElementById('url');
-            
-            // Validate Amazon URL
-            if (!urlInput.value.toLowerCase().includes('amazon')) {
-                alert('⚠️ Please enter a valid Amazon product URL');
-                return false;
-            }
-            
-            // Show loading state
+
             submitBtn.disabled = true;
-            submitBtn.value = '⏳ Processing...';
-            loading.style.display = 'block';
-            
+            submitBtn.value = "⏳ Processing...";
+            loading.style.display = "block";
+
             return true;
         }
 
-        // Auto-focus URL input on page load
-        window.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('url').focus();
         });
-
-        // Clear error messages after 10 seconds
-        const messageBox = document.querySelector('.message-box');
-        if (messageBox) {
-            setTimeout(function() {
-                messageBox.style.transition = 'opacity 0.5s';
-                messageBox.style.opacity = '0';
-                setTimeout(() => messageBox.remove(), 500);
-            }, 10000);
-        }
     </script>
 </body>
-
 </html>
