@@ -33,22 +33,38 @@ class WebScraper:
         self.session = requests.Session()
 
     def detect_source(self, url):
-        if "amazon" in url.lower():
+        low = url.lower()
+        if "amazon" in low:
             return "Amazon"
+        if "flipkart" in low:
+            return "Flipkart"
         return None
 
     def generate_product_id(self, url):
+        low = url.lower()
+        # Amazon standard ASIN pattern
         amazon_match = re.search(r"/dp/([A-Z0-9]{10})", url)
         if amazon_match:
             return f"AMZ_{amazon_match.group(1)}"
+
+        # Flipkart product pattern: /p/<product-id> or /itm<id>
+        flipkart_match = re.search(r"/p/([^/?#]+)", url)
+        if not flipkart_match:
+            flipkart_match = re.search(r"/itm([a-z0-9]+)", url, re.IGNORECASE)
+        if flipkart_match:
+            return f"FLP_{flipkart_match.group(1)}"
+
+        # Fallback hashed id with platform prefix
+        if "flipkart" in low:
+            return f"FLP_{hashlib.md5(url.encode()).hexdigest()[:10]}"
         return f"AMZ_{hashlib.md5(url.encode()).hexdigest()[:10]}"
 
     def scrape_product(self, url):
         """Scrape product name and price from an Amazon product URL."""
         try:
             source = self.detect_source(url)
-            if source != "Amazon":
-                print("❌ Only Amazon URLs are supported right now.")
+            if source is None:
+                print("❌ Unsupported URL. Only Amazon and Flipkart are supported.")
                 return None
 
             # Simulate human delay
@@ -71,14 +87,22 @@ class WebScraper:
             # Debug: Save HTML to file for inspection
             debug_dir = 'debug'
             os.makedirs(debug_dir, exist_ok=True)
-            debug_file = os.path.join(debug_dir, 'amazon_page.html')
+            debug_file = os.path.join(debug_dir, f"{source.lower()}_page.html")
             with open(debug_file, 'w', encoding='utf-8') as f:
                 f.write(response.text)
             print(f"💾 Saved page HTML to {debug_file} for inspection")
 
             product_id = self.generate_product_id(url)
-            product_name = self._extract_title(soup)
-            price = self._extract_price(soup)
+            product_name = None
+            price = 0.0
+
+            # Dispatch to site-specific extractors
+            if source == "Amazon":
+                product_name = self._extract_title(soup)
+                price = self._extract_price(soup)
+            elif source == "Flipkart":
+                product_name = self._extract_title_flipkart(soup)
+                price = self._extract_price_flipkart(soup)
 
             if not product_name:
                 print("⚠️ Could not find product name with primary methods.")
@@ -205,6 +229,65 @@ class WebScraper:
             print(f"✅ Found price using {price_attempts[0][0]}: ₹{price}")
             return price
         
+        return 0.0
+
+    def _extract_title_flipkart(self, soup):
+        """Extract Flipkart product title using known selectors and fallbacks."""
+        title_selectors = [
+            ("span", {"class": "B_NuCI"}),
+            ("span", {"class": "yhB1nd"}),
+        ]
+        for tag, attrs in title_selectors:
+            el = soup.find(tag, attrs)
+            if el:
+                text = el.get_text(strip=True)
+                if text:
+                    return text
+
+        # Try meta og:title and generic h1
+        meta = soup.find("meta", property="og:title") or soup.find("meta", attrs={"name": "title"})
+        if meta and meta.get("content"):
+            return meta.get("content").strip()
+
+        h1 = soup.find("h1")
+        if h1:
+            text = h1.get_text(strip=True)
+            if text:
+                return text
+
+        return None
+
+    def _extract_price_flipkart(self, soup):
+        """Extract price from Flipkart product pages using common selectors."""
+        price_attempts = []
+
+        # Common Flipkart price class patterns
+        def is_price_tag(tag):
+            if tag.name not in ["div", "span"]:
+                return False
+            classes = tag.get("class") or []
+            for c in classes:
+                if "_30jeq3" in c or "_1vC4OE" in c or "vAmt" in c:
+                    return True
+            return False
+
+        for el in soup.find_all(is_price_tag):
+            price_text = el.get_text(strip=True)
+            price = self._parse_price_text(price_text)
+            if price and price > 0:
+                price_attempts.append(("flipkart_class", price))
+
+        # Direct class matches
+        for el in soup.find_all(class_=lambda x: x and "_30jeq3" in x):
+            txt = el.get_text(strip=True)
+            price = self._parse_price_text(txt)
+            if price and price > 0:
+                price_attempts.append(("_30jeq3", price))
+
+        if price_attempts:
+            print(f"✅ Found price using Flipkart selector: ₹{price_attempts[0][1]}")
+            return price_attempts[0][1]
+
         return 0.0
 
     def _extract_fallback_price(self, soup):
